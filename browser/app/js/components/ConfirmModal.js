@@ -22,7 +22,7 @@ let ConfirmModal = ({baseClass, icon, text, sub, okText, cancelText, okHandler, 
     return (
         <Modal bsSize="small" animation={ false } show={ show } className={ "modal--confirm " + (baseClass || '') }>
             <ModalBody>
-                <div className="modal--confirm__icon"><img src={ icon } alt=""/></div>
+                <div className="modal--confirm__icon"><i className={ 'zmdi ' + icon } /></div>
                 <div className="modal--confirm__text">{ text }</div>
                 <div className="modal--confirm__sub">{ sub }</div>
             </ModalBody>

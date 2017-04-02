@@ -91,12 +91,14 @@ export default class Login extends React.Component {
 
                 <div className="login__content">
                     <form className="login__form" onSubmit={ this.handleSubmit.bind (this) }>
-                        <div className="form-group">
-                            <input className="form-group__field" type="text" placeholder="Access Key" id="accessKey" />
+                        <div className="form-group form-group--invert">
+                            <input className="form-group__field text-center" type="text" placeholder="Access Key" id="accessKey" />
+                            <i className="form-group__bar" />
                         </div>
 
-                        <div className="form-group">
-                            <input className="form-group__field" type="password" placeholder="Secret Key" id="secretKey" />
+                        <div className="form-group form-group--invert">
+                            <input className="form-group__field text-center" type="password" placeholder="Secret Key" id="secretKey" />
+                            <i className="form-group__bar" />
                         </div>
 
                         <button className="login__submit" type="submit"></button>

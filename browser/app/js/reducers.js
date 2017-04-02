@@ -57,7 +57,7 @@ export default (state = {
       object: ''
     },
     prefixWritable: false,
-    checkedObjects: []
+    checkedObjects: [],
   }, action) => {
   let newState = Object.assign({}, state)
   switch (action.type) {

@@ -52,7 +52,7 @@ class Policy extends Component {
           { newPrefix }
         </div>
         <div className="policy__item">
-          <select className="form-control"
+          <select>
             disabled
             value={ policy }
             onChange={ this.handlePolicyChange.bind(this) }>

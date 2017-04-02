@@ -56,7 +56,9 @@ class PolicyInput extends Component {
                                ref={ prefix => this.prefix = prefix }
                                className="form-group__field form-group__field--sm"
                                placeholder="Prefix"
-                               editable={ true }/>
+                               editable={ true }
+                        />
+                        <i className="form-group__bar" />
                     </div>
                 </div>
                 <div className="policy__item">

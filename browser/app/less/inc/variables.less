@@ -1,10 +1,14 @@
 // Base
-@font-family-sans-serif: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Lato, "Helvetica Neue", Arial, sans-serif;
-@headings-font-family: 'Montserrat', sans-serif;
-@font-family-icon: 'fontAwesome';
-@body-bg: @white;
+@font-family-sans-serif: 'Roboto', sans-serif;
+@headings-font-family: @font-family-sans-serif;
+@font-family-icon: 'Material-Design-Iconic-Font';
+@body-bg: #f3f3f3;
 @font-size-base: 15px;
 @link-hover-decoration: none;
+
+
+// Icons
+@zmdi-font-path: '../dist/fonts';
 
 
 // App colors
@@ -53,10 +57,19 @@
 @white: #FFFFFF;
 
 
+// Header
+@header-height: 120px;
+@header-link-color: #f8f8f8;
+@header-z-index: 10;
+@toolbar-height: 65px;
+@toolbar-bg: #ebebeb;
+
+
 // Sidebar
-@sidebar-width: 350px;
+@sidebar-width: 320px;
 @sidebar-bg: @white;
 @sidebar-padding: 30px;
+@sidebar-z-index: @header-z-index + 1;
 
 
 // Dropdown
@@ -76,7 +89,7 @@
 // Modal
 @modal-content-fallback-border-color:	transparent;
 @modal-content-border-color:			transparent;
-@modal-backdrop-bg:				        fade(black, 5%);
+@modal-backdrop-bg:				        fade(@black, 7%);
 @modal-header-border-color:				transparent;
 @modal-title-line-height:				transparent;
 @modal-footer-border-color:				transparent;
@@ -94,16 +107,27 @@
 // Form
 @checbox-checked-bg: @headings-color;
 @input-border: #e8ebed;
+@input-border-invert: fade(#8394af, 15%);
 @input-color: @headings-color;
-@input-bg: @white;
-
+@input-bg: transparent;
+@placeholder-color-invert: fade(@white, 50%);
+@input-color-invert: darken(@white, 5%);
 
 // Listings
-@list-row-even-bg: #f9f9f9;
-@list-row-selected-bg: darken(@list-row-even-bg, 2.5%);
+@list-row-even-bg: #fbfbfb;
+@list-row-hover-bg: lighten(@body-bg, 2.5%);
+@list-row-selected-bg: @list-row-hover-bg;
 
 
-/* Misc */
+// Misc
 @border-radius-base: 2px;
 @font-weight-bold: 500;
 @font-weight-body: 400;
+
+
+// Login
+@login-bg: #32393f;
+
+
+// Tooltips
+@tooltip-bg: #333;

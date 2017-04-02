@@ -5,31 +5,89 @@
     &:not(:only-child):not(:last-child) {
         margin-bottom: 20px;
     }
+
+    &:not(.form-group--invert) {
+        .form-group__bar {
+            &:before, &:after {
+                background-color: @light-blue;
+            }
+        }
+
+        .form-group__field {
+            border-bottom: 1px solid @input-border;
+            color: @input-color;
+
+            .placeholder(@text-muted-color);
+        }
+    }
 }
 
 .form-group__wrap {
     position: relative;
 }
 
+.form-group__bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 100%;
+
+    &:before, &:after {
+        content: '';
+        position: absolute;
+        height: 2px;
+        width: 0;
+        bottom: 0;
+        .transition(all);
+        .transition-duration(200ms);
+        .transition-timing-function(ease);
+    }
+
+    &:before {
+        left: 50%;
+    }
+
+    &:after {
+        right: 50%;
+    }
+}
+
+.form-group--invert {
+    .form-group__bar {
+        &:before,
+        &:after {
+            background-color: @white;
+        }
+    }
+
+    .form-group__field {
+        border-bottom: 1px solid @input-border-invert;
+        color: @input-color-invert;
+
+        .placeholder(@placeholder-color-invert);
+    }
+}
 
 // Controls
 .form-group__field {
-    border: 2px solid @input-border;
-    color: @input-color;
+    border: 0;
     width: 100%;
     font-size: @font-size-base - 2;
     background-color: @input-bg;
-    padding: 0 10px;
-    border-radius: 2px;
-    .transition(border-color);
-    .transition-duration(300ms);
+    padding: 0 1px;
 
     &:not(.mb-form-group__field--lg):not(.form-group__field--sm) {
-        height: 40px;
+        height: 37px;
     }
     
     &:focus {
-        border-color: darken(@input-border, 5%);
+        & ~ .form-group__bar {
+            &:before,
+            &:after {
+                width:50%;
+            }
+        }
     }
 }
 
@@ -41,10 +99,11 @@ select {
     background-color: transparent;
 
     &.form-group__field {
+        border-bottom: 1px solid @input-border;
         -webkit-appearance: none;
         -moz-appearance: none;
         border-radius: 0;
-        background: url(../../img/select-caret.svg) no-repeat bottom 5px right 5px;
+        background: url(../../img/select-caret.svg) no-repeat bottom 5px right 1px;
     }
 }
 
@@ -56,6 +115,7 @@ select {
     font-size: 11px;
     display: block;
     margin-bottom: 10px;
+    font-weight: @font-weight-bold;
 }
 
 
@@ -64,7 +124,7 @@ select {
     position: absolute;
     top: 0;
     right: 0;
-    border: 2px solid @input-border;
+    border: 1px solid @input-border;
     width: 40px;
     text-align: center;
     height: 100%;
@@ -83,7 +143,7 @@ select {
         height: 100%;
         width:100%;
         font-size: 18px;
-        line-height: 38px;
+        line-height: 36px;
         .transition(all);
         .transition-duration(300ms);
         cursor: pointer;
@@ -94,12 +154,12 @@ select {
     }
 
     &:before {
-        content: '\f06e';
-        color: @blue;
+        content: '\f15c';
+        color: @green;
     }
 
     &:after {
-        content: '\f070';
+        content: '\f15b';
         .scale(0);
         color: @red;
     }
@@ -145,33 +205,33 @@ select {
 
 .checkbox__helper {
     position: absolute;
-    top: -1px;
+    top: 0;
     left: 0;
     width: 18px;
     height: 18px;
 
     &:before,
     &:after {
-        content: '';
+        font-family: @font-family-icon;
         position: absolute;
-        border-width: 2px;
-        border-style: solid;
-        width: 19px;
-        height: 19px;
         left: 0;
-        top: 0;
+        top: -2px;
+        font-style: normal;
+        font-size: 23px;
+        line-height: 100%;
         .transition(all);
         .transition-duration(200ms);
-        border-radius: 50%;
+
+    }
+
+    &:before {
+        content: '\f26c';
     }
 
     &:after {
+        content: '\f269';
         .scale(0);
         .opacity(0);
-        background-color: @checbox-checked-bg;
-        border-color: @checbox-checked-bg;
-        background: @checbox-checked-bg url(../../img/icons/check.svg) no-repeat center;
-        background-size: 75%;
     }
 }
 
@@ -183,7 +243,7 @@ select {
 }
 
 .set-expire__item {
-    padding: 9px 5px 3px;
+    padding: 12px 5px 0;
     position: relative;
     display: table-cell;
     width: 1%;
@@ -197,8 +257,8 @@ select {
 .set-expire__title {
     font-size: 10px;
     text-transform: uppercase;
-    font-weight: bold;
-    color: @headings-color;
+    font-weight: @font-weight-bold;
+    color: @text-muted-color;
 }
 
 .set-expire__value {

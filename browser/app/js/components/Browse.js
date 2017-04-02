@@ -39,327 +39,180 @@ import ConfirmModal from './ConfirmModal'
 import * as actions from '../actions'
 import * as utils from '../utils'
 import * as mime from '../mime'
-import {minioBrowserPrefix} from '../constants'
+import { minioBrowserPrefix } from '../constants'
 import CopyToClipboard from 'react-copy-to-clipboard'
 import storage from 'local-storage-fallback'
 import InfiniteScroll from 'react-infinite-scroller';
 
 import logo from '../../img/logo.svg'
-import iconWarning from '../../img/icons/warning.svg';
-import iconTrash from '../../img/icons/trash.svg';
-import iconDownload from '../../img/icons/download.svg';
+import logoInvert from '../../img/logo-dark.svg'
 
 export default class Browse extends React.Component {
-    componentDidMount () {
+    componentDidMount() {
         const {web, dispatch, currentBucket} = this.props
-        if (!web.LoggedIn ()) return
-        web.StorageInfo ()
-            .then (res => {
-                let storageInfo = Object.assign ({}, {
+        if (!web.LoggedIn()) return
+        web.StorageInfo()
+            .then(res => {
+                let storageInfo = Object.assign({}, {
                     total: res.storageInfo.Total,
                     free: res.storageInfo.Free
                 })
                 storageInfo.used = storageInfo.total - storageInfo.free
-                dispatch (actions.setStorageInfo (storageInfo))
-                return web.ServerInfo ()
+                dispatch(actions.setStorageInfo(storageInfo))
+                return web.ServerInfo()
             })
-            .then (res => {
-                let serverInfo = Object.assign ({}, {
+            .then(res => {
+                let serverInfo = Object.assign({}, {
                     version: res.MinioVersion,
                     memory: res.MinioMemory,
                     platform: res.MinioPlatform,
                     runtime: res.MinioRuntime,
                     envVars: res.MinioEnvVars
                 })
-                dispatch (actions.setServerInfo (serverInfo))
+                dispatch(actions.setServerInfo(serverInfo))
             })
-            .catch (err => {
-                dispatch (actions.showAlert ({
+            .catch(err => {
+                dispatch(actions.showAlert({
                     type: 'danger',
                     message: err.message
                 }))
             })
     }
 
-    componentWillMount () {
+    componentWillMount() {
         const {dispatch} = this.props
         // Clear out any stale message in the alert of Login page
-        dispatch (actions.showAlert ({
+        dispatch(actions.showAlert({
             type: 'danger',
             message: ''
         }))
-        if (web.LoggedIn ()) {
-            web.ListBuckets ()
-                .then (res => {
+        if (web.LoggedIn()) {
+            web.ListBuckets()
+                .then(res => {
                     let buckets
                     if (!res.buckets)
                         buckets = []
                     else
-                        buckets = res.buckets.map (bucket => bucket.name)
+                        buckets = res.buckets.map(bucket => bucket.name)
                     if (buckets.length) {
-                        dispatch (actions.setBuckets (buckets))
-                        dispatch (actions.setVisibleBuckets (buckets))
+                        dispatch(actions.setBuckets(buckets))
+                        dispatch(actions.setVisibleBuckets(buckets))
                         if (location.pathname === minioBrowserPrefix || location.pathname === minioBrowserPrefix + '/') {
-                            browserHistory.push (utils.pathJoin (buckets[0]))
+                            browserHistory.push(utils.pathJoin(buckets[0]))
                         }
                     }
                 })
         }
-        this.history = browserHistory.listen (({pathname}) => {
-            let decPathname = decodeURI (pathname)
+        this.history = browserHistory.listen(({pathname}) => {
+            let decPathname = decodeURI(pathname)
             if (decPathname === `${minioBrowserPrefix}/login`) return // FIXME: better organize routes and remove this
-            if (!decPathname.endsWith ('/'))
+            if (!decPathname.endsWith('/'))
                 decPathname += '/'
             if (decPathname === minioBrowserPrefix + '/') {
                 return
             }
-            let obj = utils.pathSlice (decPathname)
-            if (!web.LoggedIn ()) {
-                dispatch (actions.setBuckets ([obj.bucket]))
-                dispatch (actions.setVisibleBuckets ([obj.bucket]))
+            let obj = utils.pathSlice(decPathname)
+            if (!web.LoggedIn()) {
+                dispatch(actions.setBuckets([obj.bucket]))
+                dispatch(actions.setVisibleBuckets([obj.bucket]))
             }
-            dispatch (actions.selectBucket (obj.bucket, obj.prefix))
+            dispatch(actions.selectBucket(obj.bucket, obj.prefix))
         })
     }
-<<<<<<< HEAD
 
-    componentWillUnmount () {
-        this.history ()
+    componentWillUnmount() {
+        this.history()
     }
 
-    selectBucket (e, bucket) {
-        e.preventDefault ()
+    selectBucket(e, bucket) {
+        e.preventDefault()
         if (bucket === this.props.currentBucket) return
-        browserHistory.push (utils.pathJoin (bucket))
+        browserHistory.push(utils.pathJoin(bucket))
     }
 
-    searchBuckets (e) {
-        e.preventDefault ()
+    searchBuckets(e) {
+        e.preventDefault()
         let {buckets} = this.props
-        this.props.dispatch (actions.setVisibleBuckets (buckets.filter (bucket => bucket.indexOf (e.target.value) > -1)))
+        this.props.dispatch(actions.setVisibleBuckets(buckets.filter(bucket => bucket.indexOf(e.target.value) > -1)))
     }
 
-    listObjects () {
+    listObjects() {
         const {dispatch} = this.props
-        dispatch (actions.listObjects ())
+        dispatch(actions.listObjects())
     }
 
-    selectPrefix (e, prefix) {
-        e.preventDefault ()
+    selectPrefix(e, prefix) {
+        e.preventDefault()
         const {dispatch, currentPath, web, currentBucket} = this.props
-        const encPrefix = encodeURI (prefix)
-        if (prefix.endsWith ('/') || prefix === '') {
+        const encPrefix = encodeURI(prefix)
+        if (prefix.endsWith('/') || prefix === '') {
             if (prefix === currentPath) return
-            browserHistory.push (utils.pathJoin (currentBucket, encPrefix))
-=======
-    this.history = browserHistory.listen(({pathname}) => {
-      let decPathname = decodeURI(pathname)
-      if (decPathname === `${minioBrowserPrefix}/login`) return // FIXME: better organize routes and remove this
-      if (!decPathname.endsWith('/'))
-        decPathname += '/'
-      if (decPathname === minioBrowserPrefix + '/') {
-        return
-      }
-      let obj = utils.pathSlice(decPathname)
-      if (!web.LoggedIn()) {
-        dispatch(actions.setBuckets([obj.bucket]))
-        dispatch(actions.setVisibleBuckets([obj.bucket]))
-      }
-      dispatch(actions.selectBucket(obj.bucket, obj.prefix))
-    })
-  }
-
-  componentWillUnmount() {
-    this.history()
-  }
-
-  selectBucket(e, bucket) {
-    e.preventDefault()
-    if (bucket === this.props.currentBucket) return
-    browserHistory.push(utils.pathJoin(bucket))
-  }
-
-  searchBuckets(e) {
-    e.preventDefault()
-    let {buckets} = this.props
-    this.props.dispatch(actions.setVisibleBuckets(buckets.filter(bucket => bucket.indexOf(e.target.value) > -1)))
-  }
-
-  listObjects() {
-    const {dispatch} = this.props
-    dispatch(actions.listObjects())
-  }
-
-  selectPrefix(e, prefix) {
-    e.preventDefault()
-    const {dispatch, currentPath, web, currentBucket} = this.props
-    const encPrefix = encodeURI(prefix)
-    if (prefix.endsWith('/') || prefix === '') {
-      if (prefix === currentPath) return
-      browserHistory.push(utils.pathJoin(currentBucket, encPrefix))
-    } else {
-      window.location = `${window.location.origin}/minio/download/${currentBucket}/${encPrefix}?token=${storage.getItem('token')}`
-    }
-  }
-
-  makeBucket(e) {
-    e.preventDefault()
-    const bucketName = this.refs.makeBucketRef.value
-    this.refs.makeBucketRef.value = ''
-    const {web, dispatch} = this.props
-    this.hideMakeBucketModal()
-    web.MakeBucket({
-      bucketName
-    })
-      .then(() => {
-        dispatch(actions.addBucket(bucketName))
-        dispatch(actions.selectBucket(bucketName))
-      })
-      .catch(err => dispatch(actions.showAlert({
-        type: 'danger',
-        message: err.message
-      })))
-  }
-
-  hideMakeBucketModal() {
-    const {dispatch} = this.props
-    dispatch(actions.hideMakeBucketModal())
-  }
-
-  showMakeBucketModal(e) {
-    e.preventDefault()
-    const {dispatch} = this.props
-    dispatch(actions.showMakeBucketModal())
-  }
-
-  showAbout(e) {
-    e.preventDefault()
-    const {dispatch} = this.props
-    dispatch(actions.showAbout())
-  }
-
-  hideAbout(e) {
-    e.preventDefault()
-    const {dispatch} = this.props
-    dispatch(actions.hideAbout())
-  }
-
-  showBucketPolicy(e) {
-    e.preventDefault()
-    const {dispatch} = this.props
-    dispatch(actions.showBucketPolicy())
-  }
-
-  hideBucketPolicy(e) {
-    e.preventDefault()
-    const {dispatch} = this.props
-    dispatch(actions.hideBucketPolicy())
-  }
-
-  uploadFile(e) {
-    e.preventDefault()
-    const {dispatch, buckets} = this.props
-
-    if (buckets.length === 0) {
-      dispatch(actions.showAlert({
-        type: 'danger',
-        message: "Bucket needs to be created before trying to upload files."
-      }))
-      return
-    }
-    let file = e.target.files[0]
-    e.target.value = null
-    this.xhr = new XMLHttpRequest()
-    dispatch(actions.uploadFile(file, this.xhr))
-  }
-
-  removeObject() {
-    const {web, dispatch, currentPath, currentBucket, deleteConfirmation, checkedObjects} = this.props
-    let objects = []
-    if (checkedObjects.length > 0) {
-      objects = checkedObjects.map(obj => `${currentPath}${obj}`)
-    } else {
-      objects = [deleteConfirmation.object]
-    }
-
-    web.RemoveObject({
-      bucketname: currentBucket,
-      objects: objects
-    })
-      .then(() => {
-        this.hideDeleteConfirmation()
-        if (checkedObjects.length > 0) {
-          for (let i = 0; i < checkedObjects.length; i++) {
-            dispatch(actions.removeObject(checkedObjects[i].replace(currentPath, '')))
-          }
-          dispatch(actions.checkedObjectsReset())
->>>>>>> 3bf67668b6ae2933b45d601df72f5bade4e79166
+            browserHistory.push(utils.pathJoin(currentBucket, encPrefix))
         } else {
-            window.location = `${window.location.origin}/minio/download/${currentBucket}/${encPrefix}?token=${storage.getItem ('token')}`
+            window.location = `${window.location.origin}/minio/download/${currentBucket}/${encPrefix}?token=${storage.getItem('token')}`
         }
     }
 
-<<<<<<< HEAD
-    makeBucket (e) {
-        e.preventDefault ()
+    makeBucket(e) {
+        e.preventDefault()
         const bucketName = this.refs.makeBucketRef.value
         this.refs.makeBucketRef.value = ''
         const {web, dispatch} = this.props
-        this.hideMakeBucketModal ()
-        web.MakeBucket ({
+        this.hideMakeBucketModal()
+        web.MakeBucket({
             bucketName
         })
-            .then (() => {
-                dispatch (actions.addBucket (bucketName))
-                dispatch (actions.selectBucket (bucketName))
+            .then(() => {
+                dispatch(actions.addBucket(bucketName))
+                dispatch(actions.selectBucket(bucketName))
             })
-            .catch (err => dispatch (actions.showAlert ({
+            .catch(err => dispatch(actions.showAlert({
                 type: 'danger',
                 message: err.message
             })))
     }
 
-    hideMakeBucketModal () {
+    hideMakeBucketModal() {
         const {dispatch} = this.props
-        dispatch (actions.hideMakeBucketModal ())
+        dispatch(actions.hideMakeBucketModal())
     }
 
-    showMakeBucketModal (e) {
-        e.preventDefault ()
+    showMakeBucketModal(e) {
+        e.preventDefault()
         const {dispatch} = this.props
-        dispatch (actions.showMakeBucketModal ())
+        dispatch(actions.showMakeBucketModal())
     }
 
-    showAbout (e) {
-        e.preventDefault ()
+    showAbout(e) {
+        e.preventDefault()
         const {dispatch} = this.props
-        dispatch (actions.showAbout ())
+        dispatch(actions.showAbout())
     }
 
-    hideAbout (e) {
-        e.preventDefault ()
+    hideAbout(e) {
+        e.preventDefault()
         const {dispatch} = this.props
-        dispatch (actions.hideAbout ())
+        dispatch(actions.hideAbout())
     }
 
-    showBucketPolicy (e) {
-        e.preventDefault ()
+    showBucketPolicy(e) {
+        e.preventDefault()
         const {dispatch} = this.props
-        dispatch (actions.showBucketPolicy ())
+        dispatch(actions.showBucketPolicy())
     }
 
-    hideBucketPolicy (e) {
-        e.preventDefault ()
+    hideBucketPolicy(e) {
+        e.preventDefault()
         const {dispatch} = this.props
-        dispatch (actions.hideBucketPolicy ())
+        dispatch(actions.hideBucketPolicy())
     }
 
-    uploadFile (e) {
-        e.preventDefault ()
+    uploadFile(e) {
+        e.preventDefault()
         const {dispatch, buckets} = this.props
 
         if (buckets.length === 0) {
-            dispatch (actions.showAlert ({
+            dispatch(actions.showAlert({
                 type: 'danger',
                 message: "Bucket needs to be created before trying to upload files."
             }))
@@ -367,116 +220,121 @@ export default class Browse extends React.Component {
         }
         let file = e.target.files[0]
         e.target.value = null
-        this.xhr = new XMLHttpRequest ()
-        dispatch (actions.uploadFile (file, this.xhr))
+        this.xhr = new XMLHttpRequest()
+        dispatch(actions.uploadFile(file, this.xhr))
     }
 
-    removeObject () {
+    removeObject() {
         const {web, dispatch, currentPath, currentBucket, deleteConfirmation, checkedObjects} = this.props
-        let objects = checkedObjects.length > 0 ? checkedObjects : [deleteConfirmation.object]
+        let objects = []
+        if (checkedObjects.length > 0) {
+            objects = checkedObjects.map(obj => `${currentPath}${obj}`)
+        } else {
+            objects = [deleteConfirmation.object]
+        }
 
-        web.RemoveObject ({
+        web.RemoveObject({
             bucketname: currentBucket,
             objects: objects
         })
-            .then (() => {
-                this.hideDeleteConfirmation ()
+            .then(() => {
+                this.hideDeleteConfirmation()
                 if (checkedObjects.length > 0) {
                     for (let i = 0; i < checkedObjects.length; i++) {
-                        dispatch (actions.removeObject (checkedObjects[i].replace (currentPath, '')))
+                        dispatch(actions.removeObject(checkedObjects[i].replace(currentPath, '')))
                     }
-                    dispatch (actions.checkedObjectsReset ())
+                    dispatch(actions.checkedObjectsReset())
                 } else {
-                    let delObject = deleteConfirmation.object.replace (currentPath, '')
-                    dispatch (actions.removeObject (delObject))
+                    let delObject = deleteConfirmation.object.replace(currentPath, '')
+                    dispatch(actions.removeObject(delObject))
                 }
             })
-            .catch (e => dispatch (actions.showAlert ({
+            .catch(e => dispatch(actions.showAlert({
                 type: 'danger',
                 message: e.message
             })))
     }
 
-    hideAlert (e) {
-        e.preventDefault ()
+    hideAlert(e) {
+        e.preventDefault()
         const {dispatch} = this.props
-        dispatch (actions.hideAlert ())
+        dispatch(actions.hideAlert())
     }
 
-    showDeleteConfirmation (e, object) {
-        e.preventDefault ()
+    showDeleteConfirmation(e, object) {
+        e.preventDefault()
         const {dispatch} = this.props
-        dispatch (actions.showDeleteConfirmation (object))
+        dispatch(actions.showDeleteConfirmation(object))
     }
 
-    hideDeleteConfirmation () {
+    hideDeleteConfirmation() {
         const {dispatch} = this.props
-        dispatch (actions.hideDeleteConfirmation ())
+        dispatch(actions.hideDeleteConfirmation())
     }
 
-    shareObject (e, object) {
-        e.preventDefault ()
+    shareObject(e) {
+        e.preventDefault()
         const {dispatch} = this.props
-        // let expiry = 5 * 24 * 60 * 60 // 5 days expiry by default
-        dispatch (actions.shareObject (object, 5, 0, 0))
+        let objectSelected = this.props.checkedObjects[0]
+        dispatch(actions.shareObject(objectSelected, 5, 0, 0))
     }
 
-    hideShareObjectModal () {
+    hideShareObjectModal() {
         const {dispatch} = this.props
-        dispatch (actions.hideShareObject ())
+        dispatch(actions.hideShareObject())
     }
 
-    dataType (name, contentType) {
-        return mime.getDataType (name, contentType)
+    dataType(name, contentType) {
+        return mime.getDataType(name, contentType)
     }
 
-    sortObjectsByName (e) {
+    sortObjectsByName(e) {
         const {dispatch, objects, sortNameOrder} = this.props
-        dispatch (actions.setObjects (utils.sortObjectsByName (objects, !sortNameOrder)))
-        dispatch (actions.setSortNameOrder (!sortNameOrder))
+        dispatch(actions.setObjects(utils.sortObjectsByName(objects, !sortNameOrder)))
+        dispatch(actions.setSortNameOrder(!sortNameOrder))
     }
 
-    sortObjectsBySize () {
+    sortObjectsBySize() {
         const {dispatch, objects, sortSizeOrder} = this.props
-        dispatch (actions.setObjects (utils.sortObjectsBySize (objects, !sortSizeOrder)))
-        dispatch (actions.setSortSizeOrder (!sortSizeOrder))
+        dispatch(actions.setObjects(utils.sortObjectsBySize(objects, !sortSizeOrder)))
+        dispatch(actions.setSortSizeOrder(!sortSizeOrder))
     }
 
-    sortObjectsByDate () {
+    sortObjectsByDate() {
         const {dispatch, objects, sortDateOrder} = this.props
-        dispatch (actions.setObjects (utils.sortObjectsByDate (objects, !sortDateOrder)))
-        dispatch (actions.setSortDateOrder (!sortDateOrder))
+        dispatch(actions.setObjects(utils.sortObjectsByDate(objects, !sortDateOrder)))
+        dispatch(actions.setSortDateOrder(!sortDateOrder))
     }
 
-    logout (e) {
+    logout(e) {
         const {web} = this.props
-        e.preventDefault ()
-        web.Logout ()
-        browserHistory.push (`${minioBrowserPrefix}/login`)
+        e.preventDefault()
+        web.Logout()
+        browserHistory.push(`${minioBrowserPrefix}/login`)
     }
 
-    fullScreen (e) {
-        e.preventDefault ()
+    fullScreen(e) {
+        e.preventDefault()
         let el = document.documentElement
         if (el.requestFullscreen) {
-            el.requestFullscreen ()
+            el.requestFullscreen()
         }
         if (el.mozRequestFullScreen) {
-            el.mozRequestFullScreen ()
+            el.mozRequestFullScreen()
         }
         if (el.webkitRequestFullscreen) {
-            el.webkitRequestFullscreen ()
+            el.webkitRequestFullscreen()
         }
         if (el.msRequestFullscreen) {
-            el.msRequestFullscreen ()
+            el.msRequestFullscreen()
         }
     }
 
-    toggleSidebar (status) {
-        this.props.dispatch (actions.setSidebarStatus (status))
+    toggleSidebar(status) {
+        this.props.dispatch(actions.setSidebarStatus(status))
     }
 
-    hideSidebar (event) {
+    hideSidebar(event) {
         let e = event || window.event;
 
         // Support all browsers.
@@ -486,32 +344,32 @@ export default class Browse extends React.Component {
 
         let targetID = target.id;
         if (!(targetID === 'feh-trigger')) {
-            this.props.dispatch (actions.setSidebarStatus (false))
+            this.props.dispatch(actions.setSidebarStatus(false))
         }
     }
 
-    showSettings (e) {
-        e.preventDefault ()
+    showSettings(e) {
+        e.preventDefault()
 
         const {dispatch} = this.props
-        dispatch (actions.showSettings ())
+        dispatch(actions.showSettings())
     }
 
-    showMessage () {
+    showMessage() {
         const {dispatch} = this.props
-        dispatch (actions.showAlert ({
+        dispatch(actions.showAlert({
             type: 'success',
             message: 'Link copied to clipboard!'
         }))
-        this.hideShareObjectModal ()
+        this.hideShareObjectModal()
     }
 
-    selectTexts () {
-        this.refs.copyTextInput.select ()
+    selectTexts() {
+        this.refs.copyTextInput.select()
     }
 
-    handleExpireValue (targetInput, inc, object) {
-        inc === -1 ? this.refs[targetInput].stepDown (1) : this.refs[targetInput].stepUp (1)
+    handleExpireValue(targetInput, inc, object) {
+        inc === -1 ? this.refs[targetInput].stepDown(1) : this.refs[targetInput].stepUp(1)
 
         if (this.refs.expireDays.value == 7) {
             this.refs.expireHours.value = 0
@@ -521,15 +379,15 @@ export default class Browse extends React.Component {
             this.refs.expireDays.value = 7
         }
         const {dispatch} = this.props
-        dispatch (actions.shareObject (object, this.refs.expireDays.value, this.refs.expireHours.value, this.refs.expireMins.value))
+        dispatch(actions.shareObject(object, this.refs.expireDays.value, this.refs.expireHours.value, this.refs.expireMins.value))
     }
 
-    checkObject (e, objectName) {
+    checkObject(e, objectName) {
         const {dispatch} = this.props
-        e.target.checked ? dispatch (actions.checkedObjectsAdd (objectName)) : dispatch (actions.checkedObjectsRemove (objectName))
+        e.target.checked ? dispatch(actions.checkedObjectsAdd(objectName)) : dispatch(actions.checkedObjectsRemove(objectName))
     }
 
-    downloadSelected () {
+    downloadSelected() {
         const {dispatch} = this.props
         let req = {
             bucketName: this.props.currentBucket,
@@ -538,16 +396,16 @@ export default class Browse extends React.Component {
         }
         let requestUrl = location.origin + "/minio/zip?token=" + localStorage.token
 
-        this.xhr = new XMLHttpRequest ()
-        dispatch (actions.downloadSelected (requestUrl, req, this.xhr))
+        this.xhr = new XMLHttpRequest()
+        dispatch(actions.downloadSelected(requestUrl, req, this.xhr))
     }
 
-    clearSelected () {
+    clearSelected() {
         const {dispatch} = this.props
-        dispatch (actions.checkedObjectsReset ())
+        dispatch(actions.checkedObjectsReset())
     }
 
-    render () {
+    render() {
         const {total, free} = this.props.storageInfo
         const {showMakeBucketModal, alert, sortNameOrder, sortSizeOrder, sortDateOrder, showAbout, showBucketPolicy, checkedObjects} = this.props
         const {version, memory, platform, runtime} = this.props.serverInfo
@@ -563,67 +421,47 @@ export default class Browse extends React.Component {
         // the loading of the settings.
         let settingsModal = showSettings ? <SettingsModal /> : <noscript></noscript>
 
-        let alertBox = <Alert className={ classNames ({
-                            'alert': true,
-                            'animated': true,
-                            'fadeInDown': alert.show,
-                            'fadeOutUp': !alert.show
-                        }) } bsStyle={ alert.type } onDismiss={ this.hideAlert.bind (this) }>
-                            <div className='text-center'>
-                                { alert.message }
-                            </div>
-                        </Alert>
-
+        let alertBox = <Alert className={ classNames({
+            'alert': true,
+            'animated': true,
+            'fadeInDown': alert.show,
+            'fadeOutUp': !alert.show
+        }) } bsStyle={ alert.type } onDismiss={ this.hideAlert.bind(this) }>
+            <div className='text-center'>
+                { alert.message }
+            </div>
+        </Alert>
         // Make sure you don't show a fading out alert box on the initial web-page load.
-        if (!alert.message) {
+        if (!alert.message)
             alertBox = ''
+
+        let tooltips = {
+            uploadFile: <Tooltip id="tooltip-upload-file">Upload file</Tooltip>,
+            createBucket: <Tooltip id="tooltip-create-bucket">Create Bucket</Tooltip>,
+            uploadFolder: <Tooltip id="tooltip-upload-folder">Upload Folder</Tooltip>,
         }
 
-        let signoutTooltip = <Tooltip id="tt-sign-out">
-                                Sign out
-                            </Tooltip>
         let loginButton = ''
         let browserDropdownButton = ''
         let storageUsageDetails = ''
 
-        let storageUsed = Math.round(((total - free) / total) * 100)
-        let pieDashoffset = 170 - ((170/100) * storageUsed)
-        let pieKeyframes = `@-webkit-keyframes animate-usage {
-                                to { stroke-dashoffset: ${pieDashoffset}; }
-                            }
-                            
-                            @keyframes animate-usage {
-                                to { stroke-dashoffset: ${pieDashoffset}; }
-                            }`
+        let used = total - free
+        let usedPercent = (used / total) * 100 + '%'
 
-        if (web.LoggedIn ()) {
-            browserDropdownButton = <BrowserDropdown fullScreenFunc={ this.fullScreen.bind (this) }
-                                                     aboutFunc={ this.showAbout.bind (this) }
-                                                     settingsFunc={ this.showSettings.bind (this) }
-                                                     logoutFunc={ this.logout.bind (this) }/>
+        if (web.LoggedIn()) {
+            browserDropdownButton = <BrowserDropdown fullScreenFunc={ this.fullScreen.bind(this) }
+                                                     aboutFunc={ this.showAbout.bind(this) }
+                                                     settingsFunc={ this.showSettings.bind(this) }
+                                                     logoutFunc={ this.logout.bind(this) } />
         } else {
             loginButton = <a className='btn btn-danger' href='/minio/login'>Login</a>
         }
 
-        if (web.LoggedIn ()) {
-            storageUsageDetails =  <div className="storage__usage">
-                                        <div className="storage__chart">
-                                            <style type="text/css">{ pieKeyframes }</style>
-                                            <div className="storage__percent">{ storageUsed }</div>
-                                            <svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
-                                                <g><circle r="27" cy="28" cx="32" strokeWidth="2" stroke="#52b6f3" fill="none"/></g>
-                                            </svg>
-                                        </div>
-
-                                        <div className="storage__info">
-                                            <div className="storage__info__item">
-                                                <small>Disk Used</small>
-                                                <h2>{ humanize.filesize (total - free) }</h2>
-                                            </div>
-                                            <div className="storage__info__item">
-                                                <small>Disk Free</small>
-                                                <h2>{ humanize.filesize (total - ( total - free )) }</h2>
-                                            </div>
+        if (web.LoggedIn()) {
+            storageUsageDetails =   <div className="browser-status">
+                                        <div className="browser-status__storage">
+                                            <small>{ humanize.filesize(total - free) } of { humanize.filesize(total) } Used</small>
+                                            <div className="browser-status__chart"><div style={ { width: usedPercent } }></div></div>
                                         </div>
                                     </div>
         }
@@ -631,123 +469,130 @@ export default class Browse extends React.Component {
         let createButton = ''
         if (web.LoggedIn ()) {
             createButton =  <Dropdown dropup className="create-new" id="dropdown-create-new">
-                                <Dropdown.Toggle noCaret className="create-new__toggle"> </Dropdown.Toggle>
+                                <Dropdown.Toggle noCaret className="create-new__toggle"><i className="zmdi zmdi-plus"></i></Dropdown.Toggle>
                                 <Dropdown.Menu>
-                                    <a href="#" className="create-new__btn create-new__btn--upload">
-                                        <input type="file" onChange={ this.uploadFile.bind (this) } id="object-upload-input" />
-                                        <label htmlFor="object-upload-input"> </label>
-                                    </a>
-                                    <a href="#" className="create-new__btn create-new__btn--bucket" onClick={ this.showMakeBucketModal.bind (this) }> </a>
-                                    <a href="#" className="create-new__btn create-new__btn--folder"> </a> {/*TODO*/}
+                                    <OverlayTrigger placement="top" overlay={ tooltips.uploadFile }>
+                                        <a href="#" className="create-new__btn create-new__btn--upload">
+                                            <input type="file" onChange={ this.uploadFile.bind (this) } id="object-upload-input" />
+                                            <label htmlFor="object-upload-input"> </label>
+                                        </a>
+                                    </OverlayTrigger>
+
+                                    <OverlayTrigger placement="top" overlay={ tooltips.createBucket }>
+                                        <a href="#" className="create-new__btn create-new__btn--bucket" onClick={ this.showMakeBucketModal.bind (this) }></a>
+                                    </OverlayTrigger>
+
+                                    <OverlayTrigger placement="top" overlay={ tooltips.uploadFolder }>
+                                        <a href="#" className="create-new__btn create-new__btn--folder"></a>
+                                    </OverlayTrigger>
                                 </Dropdown.Menu>
                             </Dropdown>
 
         } else {
             if (prefixWritable)
-                createButton = <Dropdown dropup className="create-new" id="dropdown-create-new">
-                    <Dropdown.Toggle noCaret className="new__toggle"></Dropdown.Toggle>
-                    <Dropdown.Menu>
-                        <OverlayTrigger placement="left" overlay={ uploadTooltip }>
-                            <a href="#" className="create-new__btn create-new__btn--upload">
-                                <input type="file"
-                                       onChange={ this.uploadFile.bind (this) }
-                                       style={ {display: 'none'} }
-                                       id="object-upload-input"></input>
-                                <label htmlFor="object-upload-input"> </label>
-                            </a>
-                        </OverlayTrigger>
-                    </Dropdown.Menu>
-                </Dropdown>
+                createButton =  <Dropdown dropup className="create-new" id="dropdown-create-new">
+                                    <Dropdown.Toggle noCaret className="create-new__toggle"><i className="zmdi zmdi-times"></i></Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <a href="#" className="create-new__btn create-new__btn--upload">
+                                            <input type="file" onChange={ this.uploadFile.bind (this) } id="object-upload-input" />
+                                            <label htmlFor="object-upload-input"> </label>
+                                        </a>
+                                    </Dropdown.Menu>
+                                </Dropdown>
+        }
+
+        let deleteButton =''
+        if (web.LoggedIn ()) {
+            deleteButton = <button onClick={ this.shareObject.bind (this) } disabled={ checkedObjects.length != 1 } className="zmdi zmdi-share" />
         }
 
         return (
-            <section className={ 'browser__inner' + (classNames ({' browser__inner--toggled': sidebarStatus === true})) }>
+            <section className="browser__inner">
+                { alertBox }
 
-                <SideBar
-                    searchBuckets={ this.searchBuckets.bind (this) }
-                    selectBucket={ this.selectBucket.bind (this) }
-                    clickOutside={ this.hideSidebar.bind (this) }
-                    showPolicy={ this.showBucketPolicy.bind (this) }
-                />
-
-                <section className="content">
-                    { alertBox }
-
-                    <header className={ 'objects-header' + (classNames ({
-                        ' objects-header--toggled': checkedObjects.length > 0
-                    })) }>
-                        <span className="objects-header__label">{ checkedObjects.length } Objects selected</span>
-                        <span className="objects-header__action">
-                            <button onClick={ this.downloadSelected.bind (this) }><img src={ iconDownload } alt=""/> Download all as zip </button>
-                            <button onClick={ this.showDeleteConfirmation.bind (this) }><img src={ iconTrash } alt=""/> Delete selected </button>
-                        </span>
-
-                        <i className="close close--dark objects-header__close" onClick={ this.clearSelected.bind (this) }>&times;</i>
-                    </header>
-
+                <section className={ classNames({ 'content': true, 'content--toggled': sidebarStatus }) }>
                     <header className="header">
-                        { storageUsageDetails }
-                        { browserDropdownButton }
-                        { loginButton }
+                        <div className="toolbar">
+                            <div className="actions">
+                                <button className="zmdi zmdi-menu" onClick={ this.toggleSidebar.bind(this, !sidebarStatus) }/>
+                                <button className="zmdi zmdi-view-comfy" />
+
+                                <button onClick={ this.showDeleteConfirmation.bind (this) } disabled={ checkedObjects.length == 0 } className="zmdi zmdi-delete" />
+                                { deleteButton }
+                                <button onClick={ this.downloadSelected.bind (this) } disabled={ checkedObjects.length == 0 } className="zmdi zmdi-download" />
+                            </div>
+
+                            { loginButton }
+                            { browserDropdownButton }
+
+                        </div>
+
+                        <Path selectPrefix={ this.selectPrefix.bind(this) } />
 
                         <BrowserUpdate />
                     </header>
 
-                    <Path selectPrefix={ this.selectPrefix.bind (this) }/>
+                    <SideBar
+                        searchBuckets={ this.searchBuckets.bind(this) }
+                        selectBucket={ this.selectBucket.bind(this) }
+                        clickOutside={ this.hideSidebar.bind(this) }
+                        showPolicy={ this.showBucketPolicy.bind(this) }
+                        storageDetails={ storageUsageDetails }
+                    />
 
                     <div className="objects">
                         <header className="objects__row" data-type="folder">
-                            <div className="objects__item objects__item--select"></div>
-                            <div className="objects__item objects__item--name" onClick={ this.sortObjectsByName.bind (this) } data-sort="name">
-                                <i className={ classNames ({
-                                    'objects__item__sort': true,
-                                    'fa': true,
-                                    'fa-sort-alpha-desc': sortNameOrder,
-                                    'fa-sort-alpha-asc': !sortNameOrder
-                                }) }/>
+                            <div className="objects__item objects__item--name" onClick={ this.sortObjectsByName.bind(this) } data-sort="name">
                                 Name
-                            </div>
-                            <div className="objects__item objects__item--size" onClick={ this.sortObjectsBySize.bind (this) } data-sort="size">
-                                <i className={ classNames ({
+                                <i className={ classNames({
                                     'objects__item__sort': true,
-                                    'fa': true,
-                                    'fa-sort-amount-desc': sortSizeOrder,
-                                    'fa-sort-amount-asc': !sortSizeOrder
-                                }) }/>
+                                    'zmdi': true,
+                                    'zmdi-sort-desc': sortNameOrder,
+                                    'zmdi-sort-asc': !sortNameOrder
+                                }) } />
+                            </div>
+                            <div className="objects__item objects__item--size" onClick={ this.sortObjectsBySize.bind(this) } data-sort="size">
                                 Size
-                            </div>
-                            <div className="objects__item objects__item--modified" onClick={ this.sortObjectsByDate.bind (this) } data-sort="last-modified">
-                                <i className={ classNames ({
+                                <i className={ classNames({
                                     'objects__item__sort': true,
-                                    'fa': true,
-                                    'fa-sort-numeric-desc': sortDateOrder,
-                                    'fa-sort-numeric-asc': !sortDateOrder
-                                }) }/>
-                                Last Modified
+                                    'zmdi': true,
+                                    'zmdi-sort-amount-desc': sortSizeOrder,
+                                    'zmdi-sort-amount-asc': !sortSizeOrder
+                                }) } />
                             </div>
-                            <div className="objects__item objects__item--actions"></div>
+                            <div className="objects__item objects__item--modified" onClick={ this.sortObjectsByDate.bind(this) } data-sort="last-modified">
+                                Last Modified
+                                <i className={ classNames({
+                                    'objects__item__sort': true,
+                                    'zmdi': true,
+                                    'zmdi-sort-amount-desc': sortDateOrder,
+                                    'zmdi-sort-amount-asc': !sortDateOrder
+                                }) } />
+                            </div>
                         </header>
-                    </div>
 
-                    <Dropzone>
-                        <InfiniteScroll loadMore={ this.listObjects.bind (this) }
-                                        hasMore={ istruncated }
-                                        useWindow={ true }
-                                        initialLoad={ false }>
-                            <ObjectsList dataType={ this.dataType.bind (this) }
-                                         selectPrefix={ this.selectPrefix.bind (this) }
-                                         showDeleteConfirmation={ this.showDeleteConfirmation.bind (this) }
-                                         shareObject={ this.shareObject.bind (this) }
-                                         checkObject={ this.checkObject.bind (this) }
-                                         checkedObjectsArray={ checkedObjects }/>
-                        </InfiniteScroll>
+                        <div className="objects__container">
+                            <Dropzone>
+                                <InfiniteScroll loadMore={ this.listObjects.bind(this) }
+                                                hasMore={ istruncated }
+                                                useWindow={ true }
+                                                initialLoad={ false }>
 
-                        <div className="text-center"
-                             style={ {display: (istruncated && currentBucket) ? 'block' : 'none'} }>
-                            <span>Loading...</span>
+                                    <ObjectsList dataType={ this.dataType.bind(this) }
+                                                 selectPrefix={ this.selectPrefix.bind(this) }
+                                                 showDeleteConfirmation={ this.showDeleteConfirmation.bind(this) }
+                                                 shareObject={ this.shareObject.bind(this) }
+                                                 checkObject={ this.checkObject.bind(this) }
+                                                 checkedObjectsArray={ checkedObjects }
+                                    />
+                                </InfiniteScroll>
+
+                                <div className="text-center" style={ { display: (istruncated && currentBucket) ? 'block' : 'none' } }>
+                                    <span>Loading...</span>
+                                </div>
+                            </Dropzone>
                         </div>
-                    </Dropzone>
-
+                    </div>
 
                     <UploadModal />
 
@@ -757,11 +602,12 @@ export default class Browse extends React.Component {
                         <ModalBody>
                             <form onSubmit={ this.makeBucket.bind (this) }>
                                 <div className="form-group">
-                                    <label className="form-group__label">Bucket Name</label>
+                                    <label className="form-group__label">Create new bucket</label>
                                     <input className="form-group__field" type="text" ref="makeBucketRef" placeholder="e.g documents" autoFocus/>
+                                    <i className="form-group__bar" />
                                 </div>
 
-                                <div className="text-center">
+                                <div className="text-right">
                                     <input type="submit" className="btn btn--link" value="Create" />
                                     <button className="btn btn--link" onClick={ this.hideMakeBucketModal.bind (this) }>Cancel</button>
                                 </div>
@@ -774,7 +620,7 @@ export default class Browse extends React.Component {
 
                         <div className="about">
                             <div className="about__logo">
-                                <img src={ logo } alt=""/>
+                                <img src={ logoInvert } alt=""/>
                             </div>
 
                             <div className="about__content">
@@ -810,7 +656,7 @@ export default class Browse extends React.Component {
                     </Modal>
 
                     <ConfirmModal show={ deleteConfirmation.show }
-                                  icon={ iconWarning }
+                                  icon={ 'zmdi-alert-polygon c-red' }
                                   text='Are you sure you want to delete?'
                                   sub='This cannot be undone!'
                                   okText='Delete'
@@ -826,6 +672,7 @@ export default class Browse extends React.Component {
                             <div className="form-group">
                                 <label className="form-group__label">Shareable Link</label>
                                 <input className="form-group__field" type="text" ref="copyTextInput" readOnly="readOnly" value={ window.location.protocol + '//' + shareObject.url } onClick={ this.selectTexts.bind (this) }/>
+                                <i className="form-group__bar" />
                             </div>
 
                             <div className="form-group" style={ {display: web.LoggedIn () ? 'block' : 'none'} }>
@@ -869,319 +716,11 @@ export default class Browse extends React.Component {
                         </div>
                     </Modal>
 
-                    { settingsModal  }
+                    { settingsModal }
 
+                    <div className={ classNames({ "sidebar-backdrop": true, "sidebar-backdrop--toggled": sidebarStatus }) } onClick={ this.hideSidebar.bind(this) } />
                 </section>
             </section>
         )
     }
-=======
-    let createButton = ''
-    if (web.LoggedIn()) {
-      createButton = <Dropdown dropup className="feb-actions" id="fe-action-toggle">
-                       <Dropdown.Toggle noCaret className="feba-toggle">
-                         <span><i className="fa fa-plus"></i></span>
-                       </Dropdown.Toggle>
-                       <Dropdown.Menu>
-                         <OverlayTrigger placement="left" overlay={ uploadTooltip }>
-                           <a href="#" className="feba-btn feba-upload">
-                             <input type="file"
-                               onChange={ this.uploadFile.bind(this) }
-                               style={ { display: 'none' } }
-                               id="file-input"></input>
-                             <label htmlFor="file-input"> <i className="fa fa-cloud-upload"></i> </label>
-                           </a>
-                         </OverlayTrigger>
-                         <OverlayTrigger placement="left" overlay={ makeBucketTooltip }>
-                           <a href="#" className="feba-btn feba-bucket" onClick={ this.showMakeBucketModal.bind(this) }><i className="fa fa-hdd-o"></i></a>
-                         </OverlayTrigger>
-                       </Dropdown.Menu>
-                     </Dropdown>
-
-    } else {
-      if (prefixWritable)
-        createButton = <Dropdown dropup className="feb-actions" id="fe-action-toggle">
-                         <Dropdown.Toggle noCaret className="feba-toggle">
-                           <span><i className="fa fa-plus"></i></span>
-                         </Dropdown.Toggle>
-                         <Dropdown.Menu>
-                           <OverlayTrigger placement="left" overlay={ uploadTooltip }>
-                             <a href="#" className="feba-btn feba-upload">
-                               <input type="file"
-                                 onChange={ this.uploadFile.bind(this) }
-                                 style={ { display: 'none' } }
-                                 id="file-input"></input>
-                               <label htmlFor="file-input"> <i className="fa fa-cloud-upload"></i> </label>
-                             </a>
-                           </OverlayTrigger>
-                         </Dropdown.Menu>
-                       </Dropdown>
-    }
-
-    return (
-      <div className={ classNames({
-                   'file-explorer': true,
-                   'toggled': sidebarStatus
-                 }) }>
-        <SideBar searchBuckets={ this.searchBuckets.bind(this) }
-          selectBucket={ this.selectBucket.bind(this) }
-          clickOutside={ this.hideSidebar.bind(this) }
-          showPolicy={ this.showBucketPolicy.bind(this) } />
-        <div className="fe-body">
-          <div className={ 'list-actions' + (classNames({
-                             ' list-actions-toggled': checkedObjects.length > 0
-                           })) }>
-            <span className="la-label"><i className="fa fa-check-circle" /> { checkedObjects.length } Objects selected</span>
-            <span className="la-actions pull-right"><button onClick={ this.downloadSelected.bind(this) }> Download all as zip </button></span>
-            <span className="la-actions pull-right"><button onClick={ this.showDeleteConfirmation.bind(this) }> Delete selected </button></span>
-            <i className="la-close fa fa-times" onClick={ this.clearSelected.bind(this) }></i>
-          </div>
-          <Dropzone>
-            { alertBox }
-            <header className="fe-header-mobile hidden-lg hidden-md">
-              <div id="feh-trigger" className={ 'feh-trigger ' + (classNames({
-                                                  'feht-toggled': sidebarStatus
-                                                })) } onClick={ this.toggleSidebar.bind(this, !sidebarStatus) }>
-                <div className="feht-lines">
-                  <div className="top"></div>
-                  <div className="center"></div>
-                  <div className="bottom"></div>
-                </div>
-              </div>
-              <img className="mh-logo" src={ logo } alt="" />
-            </header>
-            <header className="fe-header">
-              <Path selectPrefix={ this.selectPrefix.bind(this) } />
-              { storageUsageDetails }
-              <ul className="feh-actions">
-                <BrowserUpdate />
-                { loginButton }
-                { browserDropdownButton }
-              </ul>
-            </header>
-            <div className="feb-container">
-              <header className="fesl-row" data-type="folder">
-                <div className="fesl-item fesl-item-icon"></div>
-                <div className="fesl-item fesl-item-name" onClick={ this.sortObjectsByName.bind(this) } data-sort="name">
-                  Name
-                  <i className={ classNames({
-                                   'fesli-sort': true,
-                                   'fa': true,
-                                   'fa-sort-alpha-desc': sortNameOrder,
-                                   'fa-sort-alpha-asc': !sortNameOrder
-                                 }) } />
-                </div>
-                <div className="fesl-item fesl-item-size" onClick={ this.sortObjectsBySize.bind(this) } data-sort="size">
-                  Size
-                  <i className={ classNames({
-                                   'fesli-sort': true,
-                                   'fa': true,
-                                   'fa-sort-amount-desc': sortSizeOrder,
-                                   'fa-sort-amount-asc': !sortSizeOrder
-                                 }) } />
-                </div>
-                <div className="fesl-item fesl-item-modified" onClick={ this.sortObjectsByDate.bind(this) } data-sort="last-modified">
-                  Last Modified
-                  <i className={ classNames({
-                                   'fesli-sort': true,
-                                   'fa': true,
-                                   'fa-sort-numeric-desc': sortDateOrder,
-                                   'fa-sort-numeric-asc': !sortDateOrder
-                                 }) } />
-                </div>
-                <div className="fesl-item fesl-item-actions"></div>
-              </header>
-            </div>
-            <div className="feb-container">
-              <InfiniteScroll loadMore={ this.listObjects.bind(this) }
-                hasMore={ istruncated }
-                useWindow={ true }
-                initialLoad={ false }>
-                <ObjectsList dataType={ this.dataType.bind(this) }
-                  selectPrefix={ this.selectPrefix.bind(this) }
-                  showDeleteConfirmation={ this.showDeleteConfirmation.bind(this) }
-                  shareObject={ this.shareObject.bind(this) }
-                  checkObject={ this.checkObject.bind(this) }
-                  checkedObjectsArray={ checkedObjects } />
-              </InfiniteScroll>
-              <div className="text-center" style={ { display: (istruncated && currentBucket) ? 'block' : 'none' } }>
-                <span>Loading...</span>
-              </div>
-            </div>
-            <UploadModal />
-            { createButton }
-            <Modal className="modal-create-bucket"
-              bsSize="small"
-              animation={ false }
-              show={ showMakeBucketModal }
-              onHide={ this.hideMakeBucketModal.bind(this) }>
-              <button className="close close-alt" onClick={ this.hideMakeBucketModal.bind(this) }>
-                <span>×</span>
-              </button>
-              <ModalBody>
-                <form onSubmit={ this.makeBucket.bind(this) }>
-                  <div className="input-group">
-                    <input className="ig-text"
-                      type="text"
-                      ref="makeBucketRef"
-                      placeholder="Bucket Name"
-                      autoFocus/>
-                    <i className="ig-helpers"></i>
-                  </div>
-                </form>
-              </ModalBody>
-            </Modal>
-            <Modal className="modal-about modal-dark"
-              animation={ false }
-              show={ showAbout }
-              onHide={ this.hideAbout.bind(this) }>
-              <button className="close" onClick={ this.hideAbout.bind(this) }>
-                <span>×</span>
-              </button>
-              <div className="ma-inner">
-                <div className="mai-item hidden-xs">
-                  <a href="https://minio.io" target="_blank"><img className="maii-logo" src={ logo } alt="" /></a>
-                </div>
-                <div className="mai-item">
-                  <ul className="maii-list">
-                    <li>
-                      <div>
-                        Version
-                      </div>
-                      <small>{ version }</small>
-                    </li>
-                    <li>
-                      <div>
-                        Memory
-                      </div>
-                      <small>{ memory }</small>
-                    </li>
-                    <li>
-                      <div>
-                        Platform
-                      </div>
-                      <small>{ platform }</small>
-                    </li>
-                    <li>
-                      <div>
-                        Runtime
-                      </div>
-                      <small>{ runtime }</small>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </Modal>
-            <Modal className="modal-policy"
-              animation={ false }
-              show={ showBucketPolicy }
-              onHide={ this.hideBucketPolicy.bind(this) }>
-              <ModalHeader>
-                Bucket Policy (
-                { currentBucket })
-                <button className="close close-alt" onClick={ this.hideBucketPolicy.bind(this) }>
-                  <span>×</span>
-                </button>
-              </ModalHeader>
-              <div className="pm-body">
-                <PolicyInput bucket={ currentBucket } />
-                { policies.map((policy, i) => <Policy key={ i } prefix={ policy.prefix } policy={ policy.policy } />
-                  ) }
-              </div>
-            </Modal>
-            <ConfirmModal show={ deleteConfirmation.show }
-              icon='fa fa-exclamation-triangle mci-red'
-              text='Are you sure you want to delete?'
-              sub='This cannot be undone!'
-              okText='Delete'
-              cancelText='Cancel'
-              okHandler={ this.removeObject.bind(this) }
-              cancelHandler={ this.hideDeleteConfirmation.bind(this) }>
-            </ConfirmModal>
-            <Modal show={ shareObject.show }
-              animation={ false }
-              onHide={ this.hideShareObjectModal.bind(this) }
-              bsSize="small">
-              <ModalHeader>
-                Share Object
-              </ModalHeader>
-              <ModalBody>
-                <div className="input-group copy-text">
-                  <label>
-                    Shareable Link
-                  </label>
-                  <input type="text"
-                    ref="copyTextInput"
-                    readOnly="readOnly"
-                    value={ window.location.protocol + '//' + shareObject.url }
-                    onClick={ this.selectTexts.bind(this) } />
-                </div>
-                <div className="input-group" style={ { display: web.LoggedIn() ? 'block' : 'none' } }>
-                  <label>
-                    Expires in
-                  </label>
-                  <div className="set-expire">
-                    <div className="set-expire-item">
-                      <i className="set-expire-increase" onClick={ this.handleExpireValue.bind(this, 'expireDays', 1, shareObject.object) }></i>
-                      <div className="set-expire-title">
-                        Days
-                      </div>
-                      <div className="set-expire-value">
-                        <input ref="expireDays"
-                          type="number"
-                          min={ 0 }
-                          max={ 7 }
-                          defaultValue={ 5 } />
-                      </div>
-                      <i className="set-expire-decrease" onClick={ this.handleExpireValue.bind(this, 'expireDays', -1, shareObject.object) }></i>
-                    </div>
-                    <div className="set-expire-item">
-                      <i className="set-expire-increase" onClick={ this.handleExpireValue.bind(this, 'expireHours', 1, shareObject.object) }></i>
-                      <div className="set-expire-title">
-                        Hours
-                      </div>
-                      <div className="set-expire-value">
-                        <input ref="expireHours"
-                          type="number"
-                          min={ 0 }
-                          max={ 23 }
-                          defaultValue={ 0 } />
-                      </div>
-                      <i className="set-expire-decrease" onClick={ this.handleExpireValue.bind(this, 'expireHours', -1, shareObject.object) }></i>
-                    </div>
-                    <div className="set-expire-item">
-                      <i className="set-expire-increase" onClick={ this.handleExpireValue.bind(this, 'expireMins', 1, shareObject.object) }></i>
-                      <div className="set-expire-title">
-                        Minutes
-                      </div>
-                      <div className="set-expire-value">
-                        <input ref="expireMins"
-                          type="number"
-                          min={ 0 }
-                          max={ 59 }
-                          defaultValue={ 0 } />
-                      </div>
-                      <i className="set-expire-decrease" onClick={ this.handleExpireValue.bind(this, 'expireMins', -1, shareObject.object) }></i>
-                    </div>
-                  </div>
-                </div>
-              </ModalBody>
-              <div className="modal-footer">
-                <CopyToClipboard text={ window.location.protocol + '//' + shareObject.url } onCopy={ this.showMessage.bind(this) }>
-                  <button className="btn btn-success">
-                    Copy Link
-                  </button>
-                </CopyToClipboard>
-                <button className="btn btn-link" onClick={ this.hideShareObjectModal.bind(this) }>
-                  Cancel
-                </button>
-              </div>
-            </Modal>
-            { settingsModal }
-          </Dropzone>
-        </div>
-      </div>
-    )
-  }
->>>>>>> 3bf67668b6ae2933b45d601df72f5bade4e79166
 }

@@ -24,8 +24,6 @@ import ConfirmModal from './ConfirmModal'
 
 import * as actions from '../actions'
 
-import iconWarning from '../../img/icons/warning.svg';
-
 // UploadModal is a modal that handles multiple file uploads.
 // During the upload, it displays a progress bar, and can transform into an
 // abort modal if the user decides to abort the uploads.
@@ -84,7 +82,7 @@ class UploadModal extends React.Component {
         <ConfirmModal show={ true }
           baseClass={ baseClass }
           text='Abort uploads in progress?'
-          icon={ iconWarning }
+          icon={ 'zmdi-alert-polygon c-red' }
           sub='This cannot be undone!'
           okText='Abort'
           okIcon={ okIcon }
