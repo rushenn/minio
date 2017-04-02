@@ -23,7 +23,6 @@ import (
 	"net"
 	"net/http"
 	"net/url"
-	"path"
 	"sort"
 	"strconv"
 
@@ -267,7 +266,6 @@ func (api objectAPIHandlers) CopyObjectHandler(w http.ResponseWriter, r *http.Re
 	vars := mux.Vars(r)
 	dstBucket := vars["bucket"]
 	dstObject := vars["object"]
-	cpDestPath := "/" + path.Join(dstBucket, dstObject)
 
 	objectAPI := api.ObjectAPI()
 	if objectAPI == nil {
@@ -302,7 +300,7 @@ func (api objectAPIHandlers) CopyObjectHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	cpSrcDstSame := cpSrcPath == cpDestPath
+	cpSrcDstSame := srcBucket == dstBucket && srcObject == dstObject
 	// Hold write lock on destination since in both cases
 	// - if source and destination are same
 	// - if source and destination are different
@@ -445,10 +443,23 @@ func (api objectAPIHandlers) PutObjectHandler(w http.ResponseWriter, r *http.Req
 	// Extract metadata to be saved from incoming HTTP header.
 	metadata := extractMetadataFromHeader(r.Header)
 	if rAuthType == authTypeStreamingSigned {
-		// Make sure to delete the content-encoding parameter
-		// for a streaming signature which is set to value
-		// "aws-chunked"
-		delete(metadata, "content-encoding")
+		if contentEncoding, ok := metadata["content-encoding"]; ok {
+			contentEncoding = trimAwsChunkedContentEncoding(contentEncoding)
+			if contentEncoding != "" {
+				// Make sure to trim and save the content-encoding
+				// parameter for a streaming signature which is set
+				// to a custom value for example: "aws-chunked,gzip".
+				metadata["content-encoding"] = contentEncoding
+			} else {
+				// Trimmed content encoding is empty when the header
+				// value is set to "aws-chunked" only.
+
+				// Make sure to delete the content-encoding parameter
+				// for a streaming signature which is set to value
+				// for example: "aws-chunked"
+				delete(metadata, "content-encoding")
+			}
+		}
 	}
 
 	// Make sure we hex encode md5sum here.
